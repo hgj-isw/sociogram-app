@@ -1,0 +1,28 @@
+SOCIOGRAM — GitHub Pages (nu) + Cloudflare login (later)
+=======================================================
+
+FASE 1 — Website op GitHub (GEEN login)
+---------------------------------------
+1. Push deze repo naar GitHub (bijv. sociogram-app).
+2. Settings → Pages → Build and deployment → Source: GitHub Actions
+   (de workflow .github/workflows/pages.yml doet de rest na push naar main).
+3. Site-URL wordt ongeveer:
+   https://<jouw-github-user>.github.io/sociogram-app/
+4. Mentoren openen die link. Data staat in localStorage van hun browser
+   (per apparaat). Inloggen / gedeelde cloud komt in fase 2.
+
+Lokaal testen: open index.html in Chrome, of live via Pages-URL.
+
+
+FASE 2 — Cloudflare + Google/Microsoft login (LATER)
+----------------------------------------------------
+Zie SETUP-CLOUDFLARE.txt
+Pas doen als de statische site op GitHub goed werkt.
+Admin blijft hgj@isw.info.
+
+
+Niet deployen naar Pages:
+- node_modules/
+- worker/ (Cloudflare API)
+- public/ (Cloudflare frontend-prototype)
+Deze worden door de workflow al overgeslagen.

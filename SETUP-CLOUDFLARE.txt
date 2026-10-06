@@ -1,0 +1,54 @@
+SOCIOGRAM — Cloudflare setup (FASE 2 — later, ná GitHub Pages)
+==============================================================
+
+Doe dit PAS als de statische site op GitHub draait.
+Inloggen / admin-goedkeuring is expres de laatste stap.
+
+Admin-account: hgj@isw.info
+
+Nu eerst: zie DEPLOY.txt (GitHub Pages).
+
+---
+
+1) Cloudflare-account
+   - Ga naar https://dash.cloudflare.com en maak/login een gratis account
+   - In deze map (met Node): npm install
+   - npx wrangler login
+   - npx wrangler d1 create sociogram
+   - Plak de database_id in wrangler.toml bij [[d1_databases]]
+   - npx wrangler d1 execute sociogram --remote --file=./schema.sql
+   - npx wrangler secret put SESSION_SECRET   (willekeurige lange string)
+   - npx wrangler deploy
+   - Noteer je URL: https://sociogram-app.<jouw-subdomain>.workers.dev
+
+2) Google login (ISW / Google-gekoppelde schoolaccounts)
+   - https://console.cloud.google.com → APIs & Services → Credentials
+   - OAuth client ID (Web application)
+   - Authorized redirect URI:
+     https://sociogram-app.<subdomain>.workers.dev/api/auth/callback/google
+   - npx wrangler secret put GOOGLE_CLIENT_ID
+   - npx wrangler secret put GOOGLE_CLIENT_SECRET
+
+3) Microsoft login (Office 365 / vrouw werk)
+   - https://portal.azure.com → App registrations → New registration
+   - Supported account types: Accounts in any org directory + personal Microsoft accounts
+     (of "Multitenant" als dat past)
+   - Redirect URI (Web):
+     https://sociogram-app.<subdomain>.workers.dev/api/auth/callback/microsoft
+   - Certificates & secrets → New client secret
+   - API permissions: Microsoft Graph → User.Read (delegated)
+   - npx wrangler secret put MICROSOFT_CLIENT_ID
+   - npx wrangler secret put MICROSOFT_CLIENT_SECRET
+
+4) Opnieuw deployen na secrets
+   - npx wrangler deploy
+
+5) Testen
+   - Open de workers.dev URL
+   - Log in met hgj@isw.info (Google) → moet direct admin zijn
+   - Andere e-mails: pending tot jij goedkeurt in /admin.html
+
+Lokaal ontwikkelen:
+   - Kopieer .dev.vars.example naar .dev.vars en vul secrets
+   - npx wrangler d1 execute sociogram --local --file=./schema.sql
+   - npx wrangler dev

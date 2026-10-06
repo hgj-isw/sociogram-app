@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invullen · Sociogram</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="brand">Sociogram</p>
+          <p class="tagline" id="class-name">Laden…</p>
+        </div>
+      </header>
+      <main>
+        <section class="card" id="form-card">
+          <label for="me">Wie ben jij?</label>
+          <select id="me"></select>
+          <div id="questions"></div>
+          <button type="button" class="btn" id="submit">Verstuur</button>
+          <p class="hint" id="msg"></p>
+        </section>
+      </main>
+    </div>
+    <script src="/js/fill.js"></script>
+  </body>
+</html>

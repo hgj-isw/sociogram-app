@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sociogram · inloggen</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="brand">Sociogram</p>
+          <p class="tagline">Mentortool · Google of Microsoft school-/werkaccount</p>
+        </div>
+      </header>
+      <main>
+        <section class="card" style="max-width: 480px">
+          <h1>Inloggen</h1>
+          <p class="lede">
+            Docenten loggen in met hun school- of werkaccount. Nieuwe accounts wachten op
+            goedkeuring door de beheerder (<code>hgj@isw.info</code>).
+          </p>
+          <p class="hint" id="status"></p>
+          <div class="stack-actions">
+            <a class="btn" id="btn-google" href="/api/auth/login/google">Inloggen met Google</a>
+            <a class="btn btn-secondary" id="btn-ms" href="/api/auth/login/microsoft"
+              >Inloggen met Microsoft</a
+            >
+          </div>
+          <p class="hint" style="margin-top: 16px">
+            Leerlingen loggen niet in — zij krijgen een invullink van hun mentor.
+          </p>
+        </section>
+      </main>
+    </div>
+    <script>
+      (async function () {
+        const params = new URLSearchParams(location.search);
+        if (params.get("error")) {
+          document.getElementById("status").textContent =
+            "Login mislukt: " + params.get("error");
+        }
+        try {
+          const me = await fetch("/api/me").then((r) => r.json());
+          if (me.user) {
+            if (me.user.role === "admin") location.href = "/admin.html";
+            else if (me.user.status === "approved") location.href = "/app.html";
+            else location.href = "/pending.html";
+            return;
+          }
+          const p = await fetch("/api/auth/providers").then((r) => r.json());
+          if (!p.google) {
+            document.getElementById("btn-google").classList.add("is-disabled");
+            document.getElementById("btn-google").textContent =
+              "Google (nog niet geconfigureerd)";
+            document.getElementById("btn-google").removeAttribute("href");
+          }
+          if (!p.microsoft) {
+            document.getElementById("btn-ms").classList.add("is-disabled");
+            document.getElementById("btn-ms").textContent =
+              "Microsoft (nog niet geconfigureerd)";
+            document.getElementById("btn-ms").removeAttribute("href");
+          }
+        } catch (e) {
+          document.getElementById("status").textContent =
+            "API niet bereikbaar. Deploy of start wrangler dev.";
+        }
+      })();
+    </script>
+  </body>
+</html>

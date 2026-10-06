@@ -1,0 +1,20 @@
+name = "sociogram-app"
+main = "worker/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sociogram"
+database_id = "local-sociogram-placeholder"
+preview_database_id = "local-sociogram-placeholder"
+
+[vars]
+APP_NAME = "Sociogram"
+ADMIN_EMAIL = "hgj@isw.info"
+# Zet secrets via: wrangler secret put SESSION_SECRET / GOOGLE_CLIENT_ID / etc.

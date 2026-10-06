@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wachten op goedkeuring · Sociogram</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <p class="brand">Sociogram</p>
+      </header>
+      <main>
+        <section class="card" style="max-width: 520px">
+          <h1>Aanvraag ontvangen</h1>
+          <p class="lede" id="msg">
+            Je bent ingelogd, maar je account wacht op goedkeuring door de beheerder.
+          </p>
+          <p class="hint" id="who"></p>
+          <button type="button" class="btn btn-ghost" id="logout">Uitloggen</button>
+        </section>
+      </main>
+    </div>
+    <script>
+      fetch("/api/me")
+        .then((r) => r.json())
+        .then((d) => {
+          if (!d.user) return (location.href = "/");
+          if (d.user.status === "approved") {
+            location.href = d.user.role === "admin" ? "/admin.html" : "/app.html";
+            return;
+          }
+          document.getElementById("who").textContent =
+            d.user.email + (d.user.name ? " · " + d.user.name : "");
+        });
+      document.getElementById("logout").onclick = async () => {
+        await fetch("/api/auth/logout", { method: "POST" });
+        location.href = "/";
+      };
+    </script>
+  </body>
+</html>

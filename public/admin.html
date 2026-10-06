@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin · Sociogram</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="brand">Sociogram · Admin</p>
+          <p class="tagline" id="who"></p>
+        </div>
+        <div class="stack-actions">
+          <a class="btn btn-secondary" href="/app.html">Naar docent-app</a>
+          <button type="button" class="btn btn-ghost" id="logout">Uitloggen</button>
+        </div>
+      </header>
+      <main class="grid-2">
+        <section class="card">
+          <h1>Openstaande aanvragen</h1>
+          <ul id="requests" class="student-list"></ul>
+        </section>
+        <section class="card">
+          <h1>Gebruikers</h1>
+          <ul id="users" class="student-list"></ul>
+        </section>
+      </main>
+    </div>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>
