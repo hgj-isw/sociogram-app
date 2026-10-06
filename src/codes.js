@@ -13,8 +13,8 @@ window.SociogramCodes = (function () {
     return code;
   }
 
-  function ensureCodes(students) {
-    var used = {};
+  function ensureCodes(students, extraUsed) {
+    var used = Object.assign({}, extraUsed || {});
     students.forEach(function (s) {
       if (s.code) used[String(s.code).toUpperCase()] = true;
     });

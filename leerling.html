@@ -11,25 +11,23 @@
       rel="stylesheet"
     />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
   </head>
   <body class="leerling-body">
     <div class="leerling-page">
       <a class="leerling-back" href="./index.html">← Start</a>
 
-      <!-- Stap 1: code -->
       <section id="gate" class="leerling-panel">
         <p class="leerling-brand">Sociogram</p>
         <h1>Jouw code</h1>
         <p class="lede">
-          Vul de code in die je van je mentor hebt gekregen. Je komt dan bij jouw
-          eigen vragen — zonder namenlijst.
+          Vul de code in die je van je mentor hebt gekregen. Je ziet alleen jouw
+          vragen — zonder namenlijst.
         </p>
         <label for="code-input">Persoonlijke code</label>
         <input
           id="code-input"
           type="text"
-          inputmode="text"
           autocomplete="off"
           autocapitalize="characters"
           spellcheck="false"
@@ -38,27 +36,27 @@
         />
         <button type="button" class="btn" id="btn-code-go">Verder</button>
         <p class="hint err" id="gate-err" role="status"></p>
-        <p class="hint">Demo: probeer <strong>A3K7</strong></p>
+        <p class="hint">Demo: <strong>A3K7</strong></p>
       </section>
 
-      <!-- Stap 2: vragen (gecentreerd) -->
-      <section id="form-wrap" class="leerling-panel" hidden>
+      <section id="form-wrap" class="leerling-panel leerling-wizard" hidden>
         <p class="leerling-brand">Sociogram</p>
         <p class="leerling-class" id="class-label"></p>
-        <h1 id="hello">Hallo</h1>
-        <p class="lede">
-          Antwoorden zijn alleen voor je mentor. Kies klasgenoten bij elke vraag.
-        </p>
-        <div id="leerling-form" class="nomination-form"></div>
-        <button type="button" class="btn" id="btn-save">Versturen</button>
+        <p class="leerling-hello" id="hello">Hallo</p>
+        <p class="step-indicator" id="step-indicator">Vraag 1 van 1</p>
+        <div id="question-step" class="question-step"></div>
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" id="btn-prev" hidden>Vorige</button>
+          <button type="button" class="btn" id="btn-next">Volgende</button>
+        </div>
         <p class="hint" id="save-msg" role="status"></p>
       </section>
     </div>
 
-    <script src="./src/questions.js?v=3"></script>
-    <script src="./src/demo.js?v=3"></script>
-    <script src="./src/codes.js?v=3"></script>
-    <script src="./src/storage.js?v=3"></script>
-    <script src="./src/leerling.js?v=3"></script>
+    <script src="./src/questions.js?v=4"></script>
+    <script src="./src/demo.js?v=4"></script>
+    <script src="./src/codes.js?v=4"></script>
+    <script src="./src/storage.js?v=4"></script>
+    <script src="./src/leerling.js?v=4"></script>
   </body>
 </html>

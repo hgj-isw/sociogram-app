@@ -1,6 +1,6 @@
 /** Testklas Demo 2A — vaste codes voor oefenen */
 window.SociogramDemo = (function () {
-  function build() {
+  function buildClass() {
     var roster = [
       { name: "Anna", code: "A3K7" },
       { name: "Boris", code: "B2M9" },
@@ -25,6 +25,7 @@ window.SociogramDemo = (function () {
         q.id === "q-samenwerken" || q.id === "q-zitten" || q.id === "q-pauze";
     });
 
+    // Voorbeelddata alleen voor docent-beeld — leerlingen starten leeg bij invullen
     var nominations = {};
     function pick(from, qid, toNames) {
       var fid = byName[from];
@@ -47,13 +48,15 @@ window.SociogramDemo = (function () {
     pick("Emma", "q-zitten", ["Anna", "Carmen"]);
 
     return {
-      className: "Demo 2A",
+      id: "demo-class-2a",
+      name: "Demo 2A",
       students: students,
       questions: questions,
       nominations: nominations,
       isDemo: true,
+      createdAt: new Date().toISOString(),
     };
   }
 
-  return { build: build };
+  return { buildClass: buildClass };
 })();

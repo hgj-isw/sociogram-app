@@ -1,9 +1,13 @@
 (function () {
   var state = window.SociogramStorage.load();
-  window.SociogramCodes.ensureCodes(state.students);
   window.SociogramStorage.save(state);
 
+  var currentClass = null;
   var currentStudent = null;
+  var activeQuestions = [];
+  var step = 0;
+  /** antwoorden in geheugen — bewust leeg starten (niet vooringevuld) */
+  var draft = {};
 
   function $(id) {
     return document.getElementById(id);
@@ -21,81 +25,104 @@
     return escapeHtml(str).replace(/'/g, "&#39;");
   }
 
-  function showForm(student) {
-    currentStudent = student;
+  function showWizard() {
     $("gate").hidden = true;
     $("form-wrap").hidden = false;
-    $("hello").textContent = "Hallo " + student.name;
-    $("class-label").textContent = state.className
-      ? "Klas " + state.className
+    $("hello").textContent = "Hallo " + currentStudent.name;
+    $("class-label").textContent = currentClass.name
+      ? "Klas " + currentClass.name
       : "";
     $("save-msg").textContent = "";
-    renderQuestions();
+    step = 0;
+    draft = {};
+    activeQuestions = window.SociogramQuestions.activeQuestions(
+      currentClass.questions
+    );
+    if (!activeQuestions.length) {
+      $("question-step").innerHTML =
+        '<p class="hint">Er staan geen vragen klaar. Vraag je mentor.</p>';
+      $("btn-next").hidden = true;
+      $("btn-prev").hidden = true;
+      return;
+    }
+    renderStep();
     window.scrollTo(0, 0);
   }
 
-  function renderQuestions() {
-    var form = $("leerling-form");
-    form.innerHTML = "";
-    var active = window.SociogramQuestions.activeQuestions(state.questions);
-    if (!active.length) {
-      form.innerHTML =
-        '<p class="hint">Er staan geen vragen klaar. Vraag je mentor.</p>';
-      return;
-    }
-    var saved = state.nominations[currentStudent.id] || {};
-    var others = state.students.filter(function (s) {
+  function renderStep() {
+    var q = activeQuestions[step];
+    var total = activeQuestions.length;
+    $("step-indicator").textContent =
+      "Vraag " + (step + 1) + " van " + total;
+    $("btn-prev").hidden = step === 0;
+    $("btn-next").textContent =
+      step === total - 1 ? "Versturen" : "Volgende";
+
+    var others = currentClass.students.filter(function (s) {
       return s.id !== currentStudent.id;
     });
+    var selected = draft[q.id] || [];
 
-    active.forEach(function (q) {
-      var block = document.createElement("div");
-      block.className = "nomination-block";
-      var selected = saved[q.id] || [];
-      var html =
-        "<h3>" +
-        escapeHtml(q.text) +
-        "</h3>" +
-        '<p class="hint">Maximaal ' +
-        q.maxChoices +
-        " keuzes</p>" +
-        '<div class="choice-grid">';
-      others.forEach(function (s) {
-        html +=
-          "<label><input type=\"checkbox\" data-qid=\"" +
-          escapeAttr(q.id) +
-          '" value="' +
-          escapeAttr(s.id) +
-          '" ' +
-          (selected.indexOf(s.id) !== -1 ? "checked" : "") +
-          " /> " +
-          escapeHtml(s.name) +
-          "</label>";
-      });
-      html += "</div>";
-      block.innerHTML = html;
-      block.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+    var html =
+      "<h2 class=\"step-question\">" +
+      escapeHtml(q.text) +
+      "</h2>" +
+      '<p class="hint">Maximaal ' +
+      q.maxChoices +
+      " keuzes</p>" +
+      '<div class="choice-grid choice-grid-compact">';
+    others.forEach(function (s) {
+      html +=
+        "<label><input type=\"checkbox\" value=\"" +
+        escapeAttr(s.id) +
+        '" ' +
+        (selected.indexOf(s.id) !== -1 ? "checked" : "") +
+        " /> " +
+        escapeHtml(s.name) +
+        "</label>";
+    });
+    html += "</div>";
+    $("question-step").innerHTML = html;
+
+    $("question-step")
+      .querySelectorAll('input[type="checkbox"]')
+      .forEach(function (cb) {
         cb.addEventListener("change", function () {
-          var boxes = block.querySelectorAll('input[type="checkbox"]:checked');
+          var boxes = $("question-step").querySelectorAll(
+            'input[type="checkbox"]:checked'
+          );
           if (boxes.length > q.maxChoices) {
             cb.checked = false;
             alert("Maximaal " + q.maxChoices + " keuzes.");
           }
         });
       });
-      form.appendChild(block);
+
+    window.scrollTo(0, 0);
+  }
+
+  function collectCurrentStep() {
+    var q = activeQuestions[step];
+    if (!q) return;
+    var checked = Array.prototype.slice.call(
+      $("question-step").querySelectorAll('input[type="checkbox"]:checked')
+    );
+    draft[q.id] = checked.map(function (el) {
+      return el.value;
     });
   }
 
   function openWithCode(raw) {
-    var student = window.SociogramCodes.findByCode(state.students, raw);
+    var hit = window.SociogramStorage.findByCode(state, raw);
     var err = $("gate-err");
-    if (!student) {
+    if (!hit) {
       err.textContent = "Code niet gevonden. Check bij je mentor.";
       return;
     }
     err.textContent = "";
-    showForm(student);
+    currentClass = hit.classObj;
+    currentStudent = hit.student;
+    showWizard();
   }
 
   $("btn-code-go").addEventListener("click", function () {
@@ -113,29 +140,38 @@
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
   });
 
-  $("btn-save").addEventListener("click", function () {
-    if (!currentStudent) return;
-    if (!state.nominations[currentStudent.id]) {
-      state.nominations[currentStudent.id] = {};
+  $("btn-prev").addEventListener("click", function () {
+    collectCurrentStep();
+    if (step > 0) {
+      step--;
+      renderStep();
     }
-    var active = window.SociogramQuestions.activeQuestions(state.questions);
-    active.forEach(function (q) {
-      var checked = Array.prototype.slice.call(
-        document.querySelectorAll(
-          '#leerling-form input[data-qid="' + q.id + '"]:checked'
-        )
-      );
-      state.nominations[currentStudent.id][q.id] = checked.map(function (el) {
-        return el.value;
-      });
-    });
-    window.SociogramStorage.save(state);
-    $("save-msg").textContent = "Bedankt, je antwoorden zijn opgeslagen.";
   });
 
-  // ?code=A3K7 in URL
-  var params = new URLSearchParams(location.search);
-  var preset = params.get("code");
+  $("btn-next").addEventListener("click", function () {
+    collectCurrentStep();
+    if (step < activeQuestions.length - 1) {
+      step++;
+      renderStep();
+      return;
+    }
+    // versturen
+    if (!currentClass.nominations[currentStudent.id]) {
+      currentClass.nominations[currentStudent.id] = {};
+    }
+    activeQuestions.forEach(function (q) {
+      currentClass.nominations[currentStudent.id][q.id] = draft[q.id] || [];
+    });
+    window.SociogramStorage.save(state);
+    $("question-step").innerHTML =
+      '<p class="lede">Bedankt. Je antwoorden zijn opgeslagen voor je mentor.</p>';
+    $("btn-next").hidden = true;
+    $("btn-prev").hidden = true;
+    $("step-indicator").textContent = "Klaar";
+    $("save-msg").textContent = "";
+  });
+
+  var preset = new URLSearchParams(location.search).get("code");
   if (preset) {
     $("code-input").value = String(preset).toUpperCase();
     openWithCode(preset);

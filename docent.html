@@ -11,7 +11,7 @@
       rel="stylesheet"
     />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
   </head>
   <body>
     <div class="app-shell">
@@ -20,23 +20,69 @@
           <p class="brand">Sociogram</p>
           <p class="tagline" id="docent-tagline">Mentortool</p>
         </div>
-        <nav class="tabs" role="tablist" aria-label="Hoofdsecties">
-          <button type="button" class="tab is-active" data-tab="vragen">Vragen</button>
-          <button type="button" class="tab" data-tab="klas">Klas</button>
-          <button type="button" class="tab" data-tab="uitdelen">Codes</button>
+        <label class="inline-label class-switch" id="class-switch-wrap">
+          Actieve klas
+          <select id="class-switch"></select>
+        </label>
+        <nav class="tabs" role="tablist">
+          <button type="button" class="tab is-active" data-tab="klassen">Klassen</button>
+          <button type="button" class="tab" data-tab="vragen">Vragen</button>
+          <button type="button" class="tab" data-tab="codes">Codes</button>
           <button type="button" class="tab" data-tab="beeld">Beeld</button>
         </nav>
         <a class="btn btn-ghost" href="./index.html">Start</a>
       </header>
 
       <main>
-        <section id="panel-vragen" class="panel is-active">
+        <section id="panel-klassen" class="panel is-active">
           <div class="panel-head">
             <div>
-              <h1>Vragen</h1>
+              <h1>Klassen</h1>
               <p class="lede">
-                Zet vragen aan of uit. Alleen aangezette vragen zien leerlingen en
-                komen in het sociogram.
+                Maak eerst een klas aan. Leerlingen krijgen automatisch een
+                persoonlijke code (klaar voor latere database-opslag).
+              </p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="btn btn-secondary" id="btn-load-demo">
+                Testklas Demo 2A
+              </button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h2>Nieuwe klas</h2>
+              <label for="new-class-name">Klasnaam</label>
+              <input id="new-class-name" type="text" placeholder="bijv. 2B" />
+              <label for="new-students">Leerlingen (één per regel)</label>
+              <textarea id="new-students" rows="8" placeholder="Anna&#10;Boris&#10;Carmen"></textarea>
+              <button type="button" class="btn" id="btn-create-class">
+                Klas aanmaken + codes
+              </button>
+            </div>
+            <div class="card">
+              <h2>Jouw klassen</h2>
+              <ul id="class-list" class="student-list"></ul>
+              <div id="active-class-edit" hidden>
+                <h2 style="margin-top: 16px">Leerlingen in actieve klas</h2>
+                <label for="add-students">Extra leerlingen toevoegen</label>
+                <textarea id="add-students" rows="4" placeholder="Nieuwe naam"></textarea>
+                <button type="button" class="btn btn-secondary" id="btn-add-students">
+                  Toevoegen
+                </button>
+                <ul id="student-list" class="student-list" style="margin-top: 12px"></ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="panel-vragen" class="panel" hidden>
+          <div class="panel-head">
+            <div>
+              <h1>Vragen voor deze klas</h1>
+              <p class="lede">
+                Koppel vragen aan de actieve klas. Alleen aangezette vragen zien
+                leerlingen.
               </p>
             </div>
             <div class="panel-actions">
@@ -49,81 +95,48 @@
               <button type="button" class="btn" id="btn-enable-all">Alles aan</button>
             </div>
           </div>
-          <div class="filter-row">
-            <label class="chip-filter">
-              <input type="checkbox" id="filter-positive" checked />
-              Positief
-            </label>
-            <label class="chip-filter">
-              <input type="checkbox" id="filter-negative" checked />
-              Negatief
-            </label>
-            <p class="muted" id="active-count"></p>
-          </div>
-          <div id="question-list" class="question-list"></div>
-        </section>
-
-        <section id="panel-klas" class="panel" hidden>
-          <div class="panel-head">
-            <div>
-              <h1>Klas</h1>
-              <p class="lede">
-                Vul klasnaam en leerlingen in. Elke leerling krijgt automatisch een
-                persoonlijke code.
-              </p>
+          <p class="muted" id="vragen-empty" hidden>
+            Maak of selecteer eerst een klas bij Klassen.
+          </p>
+          <div id="vragen-body">
+            <div class="filter-row">
+              <label class="chip-filter">
+                <input type="checkbox" id="filter-positive" checked />
+                Positief
+              </label>
+              <label class="chip-filter">
+                <input type="checkbox" id="filter-negative" checked />
+                Negatief
+              </label>
+              <p class="muted" id="active-count"></p>
             </div>
-            <div class="panel-actions">
-              <button type="button" class="btn btn-secondary" id="btn-load-demo">
-                Testklas laden
-              </button>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="card">
-              <label for="class-name">Klasnaam</label>
-              <input id="class-name" type="text" placeholder="bijv. 2B" />
-              <label for="student-input">Leerlingen (één per regel)</label>
-              <textarea id="student-input" rows="10" placeholder="Anna&#10;Boris"></textarea>
-              <button type="button" class="btn" id="btn-add-students">Toevoegen</button>
-            </div>
-            <div class="card">
-              <h2>Huidige lijst</h2>
-              <ul id="student-list" class="student-list"></ul>
-              <button type="button" class="btn btn-ghost" id="btn-clear-students">
-                Lijst legen
-              </button>
-            </div>
+            <div id="question-list" class="question-list"></div>
           </div>
         </section>
 
-        <section id="panel-uitdelen" class="panel" hidden>
+        <section id="panel-codes" class="panel" hidden>
           <div class="panel-head">
             <div>
               <h1>Persoonlijke codes</h1>
               <p class="lede">
-                Geef elke leerling privé de eigen code. Zij openen
-                <strong>Leerling</strong> op de startpagina, typen de code en zien
-                alleen hun eigen formulier — geen namenlijst.
+                Geef elke leerling privé de code. Zij openen Leerling, typen de code
+                en zien alleen hun formulier.
               </p>
             </div>
           </div>
           <div class="grid-2">
             <div class="card">
               <h2>Delen</h2>
-              <p class="hint">
-                Link voor leerlingen (startpagina → Leerling):
-              </p>
               <div class="stack-actions">
                 <a class="btn" href="./leerling.html">Open leerlingpagina</a>
                 <button type="button" class="btn btn-secondary" id="btn-copy-link">
                   Kopieer link
                 </button>
               </div>
-              <p class="hint" id="invite-status" role="status"></p>
+              <p class="hint" id="invite-status"></p>
             </div>
             <div class="card">
               <h2>Codes &amp; voortgang</h2>
-              <p class="hint">Alleen voor jou — niet projecteren met codes.</p>
               <ul id="progress-list" class="student-list"></ul>
             </div>
           </div>
@@ -134,7 +147,7 @@
             <div>
               <h1>Sociogram</h1>
               <p class="lede">
-                Groen = positief, terracotta = negatief. Dikkere lijn = wederzijds.
+                Van de actieve klas. Wissel van klas via het menu rechtsboven.
               </p>
             </div>
             <div class="panel-actions">
@@ -145,12 +158,14 @@
               <button type="button" class="btn btn-secondary" id="btn-redraw">
                 Opnieuw tekenen
               </button>
+              <button type="button" class="btn" id="btn-print">Printen</button>
             </div>
           </div>
-          <div class="viz-wrap card">
+          <div class="viz-wrap card" id="print-area">
+            <p class="print-title" id="print-class-title"></p>
             <svg id="sociogram-svg" viewBox="0 0 900 560" role="img" aria-label="Sociogram"></svg>
           </div>
-          <div class="grid-2">
+          <div class="grid-2 no-print">
             <div class="card">
               <h2>Signalen</h2>
               <ul id="signals-list" class="signals"></ul>
@@ -167,11 +182,11 @@
         </section>
       </main>
     </div>
-    <script src="./src/questions.js?v=3"></script>
-    <script src="./src/demo.js?v=3"></script>
-    <script src="./src/codes.js?v=3"></script>
-    <script src="./src/storage.js?v=3"></script>
-    <script src="./src/sociogram.js?v=3"></script>
-    <script src="./src/docent.js?v=3"></script>
+    <script src="./src/questions.js?v=4"></script>
+    <script src="./src/demo.js?v=4"></script>
+    <script src="./src/codes.js?v=4"></script>
+    <script src="./src/storage.js?v=4"></script>
+    <script src="./src/sociogram.js?v=4"></script>
+    <script src="./src/docent.js?v=4"></script>
   </body>
 </html>
