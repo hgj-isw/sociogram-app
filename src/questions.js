@@ -4,7 +4,7 @@ window.SociogramQuestions = (function () {
     {
       id: "q-samenwerken",
       polarity: "positive",
-      enabled: false,
+      enabled: true,
       inPackage: true,
       maxChoices: 3,
       label: "Samenwerken",
@@ -14,7 +14,7 @@ window.SociogramQuestions = (function () {
     {
       id: "q-zitten",
       polarity: "positive",
-      enabled: false,
+      enabled: true,
       inPackage: true,
       maxChoices: 3,
       label: "Zitten",
@@ -24,7 +24,7 @@ window.SociogramQuestions = (function () {
     {
       id: "q-pauze",
       polarity: "positive",
-      enabled: false,
+      enabled: true,
       inPackage: true,
       maxChoices: 3,
       label: "Pauze",

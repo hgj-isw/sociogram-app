@@ -1,7 +1,8 @@
 (function () {
   var state = window.SociogramStorage.load();
-  // persist migrated pause question if needed
   window.SociogramStorage.save(state);
+
+  var ROLE_KEY = "sociogram-role";
 
   function uid() {
     return "s-" + Math.random().toString(36).slice(2, 9);
@@ -15,23 +16,69 @@
     return document.getElementById(id);
   }
 
+  function showView(name) {
+    $("view-welcome").hidden = name !== "welcome";
+    $("view-docent").hidden = name !== "docent";
+    $("view-leerling").hidden = name !== "leerling";
+  }
+
+  function setRole(role) {
+    if (role) sessionStorage.setItem(ROLE_KEY, role);
+    else sessionStorage.removeItem(ROLE_KEY);
+  }
+
+  function getRole() {
+    return sessionStorage.getItem(ROLE_KEY);
+  }
+
+  function goHome() {
+    setRole(null);
+    showView("welcome");
+  }
+
+  function enterDocent() {
+    setRole("docent");
+    showView("docent");
+    $("docent-tagline").textContent = state.className
+      ? "Klas " + state.className
+      : "Mentortool";
+    renderQuestions();
+    renderStudents();
+    renderProgress();
+    refreshVizFilter();
+  }
+
+  function enterLeerling() {
+    setRole("leerling");
+    showView("leerling");
+    $("leerling-class-label").textContent = state.className
+      ? "Klas " + state.className
+      : "Invullen";
+    renderLeerlingForm();
+  }
+
+  $("btn-role-docent").addEventListener("click", enterDocent);
+  $("btn-role-leerling").addEventListener("click", enterLeerling);
+  $("btn-home-docent").addEventListener("click", goHome);
+  $("btn-home-leerling").addEventListener("click", goHome);
+
   /* ---------- tabs ---------- */
-  document.querySelectorAll(".tab").forEach(function (btn) {
+  document.querySelectorAll("#view-docent .tab").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var tab = btn.getAttribute("data-tab");
-      document.querySelectorAll(".tab").forEach(function (b) {
+      document.querySelectorAll("#view-docent .tab").forEach(function (b) {
         var on = b === btn;
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-selected", on ? "true" : "false");
       });
-      document.querySelectorAll(".panel").forEach(function (panel) {
+      document.querySelectorAll("#view-docent .panel").forEach(function (panel) {
         var match = panel.id === "panel-" + tab;
         panel.classList.toggle("is-active", match);
         panel.hidden = !match;
       });
       if (tab === "beeld") renderViz();
       if (tab === "klas") renderStudents();
-      if (tab === "forms") renderPackPanel();
+      if (tab === "uitdelen") renderProgress();
     });
   });
 
@@ -45,6 +92,7 @@
 
   function renderQuestions() {
     var list = $("question-list");
+    if (!list) return;
     var showPos = $("filter-positive").checked;
     var showNeg = $("filter-negative").checked;
     list.innerHTML = "";
@@ -56,23 +104,12 @@
     });
 
     var shown = window.SociogramQuestions.activeQuestions(state.questions).length;
-    var withData = state.questions.filter(function (q) {
-      return questionHasData(q.id);
-    }).length;
     $("active-count").textContent =
-      shown +
-      " in beeld · " +
-      withData +
-      " met geïmporteerde data · " +
-      state.questions.length +
-      " in bibliotheek";
+      shown + " van " + state.questions.length + " vragen aan";
 
     visible.forEach(function (q) {
       var card = document.createElement("article");
       card.className = "q-card" + (q.enabled ? "" : " is-off");
-      var dataNote = questionHasData(q.id)
-        ? '<span class="pill pill-pos">Heeft data</span>'
-        : '<span class="pill">Geen data</span>';
       card.innerHTML =
         '<div class="q-card-top">' +
         '<div class="q-meta">' +
@@ -81,40 +118,38 @@
         '">' +
         (q.polarity === "positive" ? "Positief" : "Negatief") +
         "</span>" +
-        dataNote +
+        (questionHasData(q.id)
+          ? '<span class="pill pill-pos">Ingevuld</span>'
+          : "") +
         "<strong>" +
         escapeHtml(q.label) +
         "</strong>" +
         "</div>" +
         '<label class="toggle">' +
-        '<input type="checkbox" data-action="toggle-viz" ' +
+        '<input type="checkbox" data-action="toggle" ' +
         (q.enabled ? "checked" : "") +
         " />" +
-        "Tonen in sociogram" +
+        (q.enabled ? "Aan" : "Uit") +
         "</label>" +
         "</div>" +
         '<div class="q-fields">' +
-        "<div><label>Vraagtekst (voor Copilot/Forms — letterlijk overnemen)</label>" +
+        "<div><label>Vraagtekst</label>" +
         '<input type="text" data-field="text" value="' +
         escapeAttr(q.text) +
         '" /></div>' +
+        '<div style="display:grid;grid-template-columns:1fr 100px;gap:10px">' +
         "<div><label>Korte naam</label>" +
         '<input type="text" data-field="label" value="' +
         escapeAttr(q.label) +
         '" /></div>' +
-        '<div style="display:grid;grid-template-columns:120px 1fr;gap:10px">' +
         "<div><label>Max. keuzes</label>" +
         '<input type="number" min="1" max="5" data-field="maxChoices" value="' +
         q.maxChoices +
         '" /></div>' +
-        "<div><label>Hint</label>" +
-        '<input type="text" data-field="hint" value="' +
-        escapeAttr(q.hint || "") +
-        '" /></div>' +
         "</div>" +
         "</div>";
 
-      card.querySelector('[data-action="toggle-viz"]').addEventListener("change", function (e) {
+      card.querySelector('[data-action="toggle"]').addEventListener("change", function (e) {
         q.enabled = e.target.checked;
         save();
         renderQuestions();
@@ -143,33 +178,26 @@
   $("filter-negative").addEventListener("change", renderQuestions);
 
   $("btn-reset-questions").addEventListener("click", function () {
-    if (!confirm("Vraagteksten terugzetten naar standaard? Geïmporteerde antwoorden blijven staan."))
-      return;
+    if (!confirm("Vragen terugzetten naar standaard?")) return;
     var oldNoms = state.nominations;
-    var enabledMap = {};
-    state.questions.forEach(function (q) {
-      enabledMap[q.id] = q.enabled;
-    });
     state.questions = window.SociogramQuestions.cloneDefaultQuestions();
-    state.questions.forEach(function (q) {
-      if (enabledMap[q.id]) q.enabled = true;
-    });
     state.nominations = oldNoms;
+    state.isDemo = false;
     save();
     renderQuestions();
     refreshVizFilter();
   });
 
-  $("btn-show-imported").addEventListener("click", function () {
+  $("btn-enable-positive").addEventListener("click", function () {
     state.questions.forEach(function (q) {
-      q.enabled = questionHasData(q.id);
+      q.enabled = q.polarity === "positive";
     });
     save();
     renderQuestions();
     refreshVizFilter();
   });
 
-  $("btn-show-all-viz").addEventListener("click", function () {
+  $("btn-enable-all").addEventListener("click", function () {
     state.questions.forEach(function (q) {
       q.enabled = true;
     });
@@ -178,7 +206,7 @@
     refreshVizFilter();
   });
 
-  /* ---------- class / students ---------- */
+  /* ---------- class ---------- */
   function parseNames(raw) {
     return raw
       .split(/[\n,;]+/)
@@ -190,6 +218,9 @@
 
   function renderStudents() {
     $("class-name").value = state.className || "";
+    $("docent-tagline").textContent = state.className
+      ? "Klas " + state.className
+      : "Mentortool";
     var ul = $("student-list");
     ul.innerHTML = "";
     if (!state.students.length) {
@@ -201,10 +232,7 @@
       li.innerHTML =
         "<span>" +
         escapeHtml(s.name) +
-        (s.code
-          ? ' <span class="hint">code ' + escapeHtml(s.code) + "</span>"
-          : "") +
-        '</span><button type="button" aria-label="Verwijder">Verwijder</button>';
+        '</span><button type="button">Verwijder</button>';
       li.querySelector("button").addEventListener("click", function () {
         state.students = state.students.filter(function (x) {
           return x.id !== s.id;
@@ -212,15 +240,17 @@
         delete state.nominations[s.id];
         Object.keys(state.nominations).forEach(function (fromId) {
           Object.keys(state.nominations[fromId] || {}).forEach(function (qid) {
-            state.nominations[fromId][qid] = (state.nominations[fromId][qid] || []).filter(
-              function (id) {
-                return id !== s.id;
-              }
-            );
+            state.nominations[fromId][qid] = (
+              state.nominations[fromId][qid] || []
+            ).filter(function (id) {
+              return id !== s.id;
+            });
           });
         });
+        state.isDemo = false;
         save();
         renderStudents();
+        renderProgress();
       });
       ul.appendChild(li);
     });
@@ -228,7 +258,11 @@
 
   $("class-name").addEventListener("change", function () {
     state.className = $("class-name").value.trim();
+    state.isDemo = false;
     save();
+    $("docent-tagline").textContent = state.className
+      ? "Klas " + state.className
+      : "Mentortool";
   });
 
   $("btn-add-students").addEventListener("click", function () {
@@ -247,265 +281,207 @@
       }
     });
     $("student-input").value = "";
+    state.isDemo = false;
     save();
     renderStudents();
+    renderProgress();
   });
 
   $("btn-clear-students").addEventListener("click", function () {
-    if (!confirm("Alle leerlingen en hun antwoorden wissen?")) return;
+    if (!confirm("Alle leerlingen en antwoorden wissen?")) return;
     state.students = [];
     state.nominations = {};
+    state.isDemo = false;
     save();
     renderStudents();
+    renderProgress();
   });
 
-  /* ---------- Uitdelen (Excel / HTML + codes) ---------- */
-  function packageMode() {
-    return ($("package-mode") && $("package-mode").value) || "positive";
-  }
-
-  function renderPackageCustom() {
-    var box = $("package-custom-list");
-    if (!box) return;
-    var mode = packageMode();
-    box.hidden = mode !== "custom";
-    if (mode !== "custom") return;
-    box.innerHTML = "";
-    state.questions.forEach(function (q) {
-      var label = document.createElement("label");
-      label.innerHTML =
-        '<input type="checkbox" data-qid="' +
-        escapeAttr(q.id) +
-        '" ' +
-        (q.inPackage ? "checked" : "") +
-        " /> " +
-        escapeHtml(q.label) +
-        " — " +
-        escapeHtml(q.text);
-      label.querySelector("input").addEventListener("change", function (e) {
-        q.inPackage = e.target.checked;
-        save();
-      });
-      box.appendChild(label);
-    });
-  }
-
-  function showCodesPreview() {
-    var box = $("codes-preview");
-    if (!box) return;
-    box.hidden = false;
-    box.textContent = state.students
-      .map(function (s) {
-        return (s.code || "????") + "  →  " + s.name;
-      })
-      .join("\n");
-  }
-
-  function renderPackPanel() {
-    renderPackageCustom();
-    if (state.students.some(function (s) { return s.code; })) showCodesPreview();
-  }
-
-  if ($("package-mode")) {
-    $("package-mode").addEventListener("change", renderPackageCustom);
-  }
-
-  function requireStudents() {
-    if (!state.students.length) {
-      alert("Voeg eerst leerlingen toe bij Klas.");
-      return false;
-    }
-    return true;
-  }
-
-  $("btn-gen-leerling-html").addEventListener("click", function () {
-    if (!requireStudents()) return;
-    state.students = window.SociogramExcelPack.downloadLeerlingHtml(
-      state,
-      packageMode()
-    );
-    save();
-    showCodesPreview();
-    $("pack-status").textContent =
-      "Gedownload: HTML-invulpagina + DOCENT-GEHEIM-codes.csv. Deel alleen de HTML (bijv. via Teams). Geef elke leerling privé de eigen code.";
-  });
-
-  $("btn-gen-excel").addEventListener("click", function () {
-    if (!requireStudents()) return;
-    state.students = window.SociogramExcelPack.downloadExcelPack(
-      state,
-      packageMode()
-    );
-    save();
-    showCodesPreview();
-    $("pack-status").textContent =
-      "Gedownload: Excel (.xls) met tabblad per code + DOCENT-GEHEIM-codes.csv. Deel het .xls-bestand; codes privé houden.";
-  });
-
-  function applyImport(result) {
-    var status = $("import-status");
-    var warnUl = $("import-warnings");
-    warnUl.innerHTML = "";
-
-    if (!result || !result.ok) {
-      status.textContent = "Import mislukt.";
-      ((result && result.warnings) || ["Onbekend bestandsformaat"]).forEach(function (w) {
-        var li = document.createElement("li");
-        li.textContent = w;
-        warnUl.appendChild(li);
-      });
+  $("btn-load-demo").addEventListener("click", function () {
+    if (
+      state.students.length &&
+      !confirm("Huidige klas vervangen door testklas Demo 2A?")
+    ) {
       return;
     }
-
-    state.nominations = result.nominations;
-    if (result.students) state.students = result.students;
-
-    var matched = {};
-    (result.matchedQuestionIds || []).forEach(function (id) {
-      matched[id] = true;
-    });
-    state.questions.forEach(function (q) {
-      q.enabled = !!matched[q.id];
-    });
-
+    state = window.SociogramDemo.build();
     save();
     renderStudents();
     renderQuestions();
+    renderProgress();
     refreshVizFilter();
+    alert("Testklas Demo 2A geladen. Open Beeld of laat een leerling invullen.");
+  });
 
-    status.textContent =
-      "Geïmporteerd: " +
-      result.imported +
-      " respondent(en)" +
-      (result.studentsAdded ? ", +" + result.studentsAdded + " namen" : "") +
-      (result.matchedQuestions && result.matchedQuestions.length
-        ? " · in beeld: " + result.matchedQuestions.join(", ")
-        : "") +
-      ". Open Beeld.";
+  /* ---------- uitnodigen / voortgang ---------- */
+  function hasAnswered(studentId) {
+    var active = window.SociogramQuestions.activeQuestions(state.questions);
+    if (!active.length) return false;
+    var bag = state.nominations[studentId] || {};
+    return active.some(function (q) {
+      return (bag[q.id] || []).length > 0;
+    });
+  }
 
-    (result.warnings || []).forEach(function (w) {
+  function renderProgress() {
+    var ul = $("progress-list");
+    if (!ul) return;
+    ul.innerHTML = "";
+    if (!state.students.length) {
+      ul.innerHTML = '<li class="muted">Eerst een klas toevoegen</li>';
+      return;
+    }
+    state.students.forEach(function (s) {
+      var done = hasAnswered(s.id);
       var li = document.createElement("li");
-      li.textContent = w;
-      warnUl.appendChild(li);
+      li.innerHTML =
+        "<span>" +
+        escapeHtml(s.name) +
+        '</span><span class="status-dot ' +
+        (done ? "done" : "todo") +
+        '" title="' +
+        (done ? "Ingevuld" : "Nog niet") +
+        '"></span>';
+      ul.appendChild(li);
     });
   }
 
-  function mergeImports(results) {
-    var merged = {
-      ok: false,
-      imported: 0,
-      warnings: [],
-      nominations: Object.assign({}, state.nominations),
-      students: state.students,
-      matchedQuestionIds: [],
-      matchedQuestions: [],
-      studentsAdded: 0,
-    };
-    var matched = {};
-    results.forEach(function (result) {
-      if (!result || !result.ok) {
-        merged.warnings = merged.warnings.concat(
-          (result && result.warnings) || ["Bestand overgeslagen"]
-        );
-        return;
-      }
-      merged.ok = true;
-      merged.imported += result.imported || 0;
-      merged.studentsAdded += result.studentsAdded || 0;
-      merged.warnings = merged.warnings.concat(result.warnings || []);
-      if (result.students) merged.students = result.students;
-      Object.keys(result.nominations || {}).forEach(function (sid) {
-        merged.nominations[sid] = Object.assign(
-          {},
-          merged.nominations[sid] || {},
-          result.nominations[sid]
-        );
-      });
-      (result.matchedQuestionIds || []).forEach(function (id) {
-        matched[id] = true;
-      });
-    });
-    merged.matchedQuestionIds = Object.keys(matched);
-    merged.matchedQuestions = state.questions
-      .filter(function (q) {
-        return matched[q.id];
-      })
-      .map(function (q) {
-        return q.label;
-      });
-    return merged;
-  }
+  $("btn-open-leerling").addEventListener("click", enterLeerling);
 
-  function runImportText(text) {
-    var normalized = String(text || "");
-    if (!normalized.trim()) return { ok: false, warnings: ["Lege inhoud"] };
-    if (normalized.indexOf("\t") !== -1 && normalized.indexOf(",") === -1 && normalized.indexOf(";") === -1) {
-      normalized = normalized
-        .split(/\r?\n/)
-        .map(function (line) {
-          return line
-            .split("\t")
-            .map(function (cell) {
-              if (/[";,\n]/.test(cell)) return '"' + cell.replace(/"/g, '""') + '"';
-              return cell;
-            })
-            .join(";");
-        })
-        .join("\n");
+  $("btn-copy-link").addEventListener("click", function () {
+    var url = location.href.split("#")[0];
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () {
+          $("invite-status").textContent = "Link gekopieerd.";
+        },
+        function () {
+          $("invite-status").textContent = url;
+        }
+      );
+    } else {
+      $("invite-status").textContent = url;
     }
+  });
 
-    if (/^\s*<\?xml|^\s*<Workbook/i.test(normalized)) {
-      return window.SociogramExcelPack.importWorkbookXml(normalized, state);
-    }
+  /* ---------- leerling invullen ---------- */
+  function renderLeerlingForm() {
+    var sel = $("leerling-select");
+    var form = $("leerling-form");
+    var msg = $("leerling-msg");
+    msg.textContent = "";
+    sel.innerHTML = "";
+    form.innerHTML = "";
 
-    var answer = window.SociogramExcelPack.importAnswerCsv(normalized, state);
-    if (answer) return answer;
-    return window.SociogramFormsExcel.importCsv(normalized, state);
-  }
-
-  $("btn-import-csv").addEventListener("click", function () {
-    var fileInput = $("csv-file");
-    var pasted = $("csv-paste").value;
-    var files = fileInput.files ? Array.prototype.slice.call(fileInput.files) : [];
-
-    if (!files.length) {
-      applyImport(runImportText(pasted));
+    if (!state.students.length) {
+      form.innerHTML =
+        '<p class="hint">Er is nog geen klas. Vraag je mentor om leerlingen toe te voegen.</p>';
       return;
     }
 
-    var pending = files.length;
-    var results = [];
-    files.forEach(function (file) {
-      var reader = new FileReader();
-      reader.onload = function () {
-        results.push(runImportText(reader.result));
-        pending--;
-        if (pending === 0) applyImport(mergeImports(results));
-      };
-      reader.readAsText(file, "UTF-8");
+    var opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = "— kies je naam —";
+    sel.appendChild(opt0);
+    state.students.forEach(function (s) {
+      var o = document.createElement("option");
+      o.value = s.id;
+      o.textContent = s.name;
+      sel.appendChild(o);
     });
-  });
 
-  $("csv-file").addEventListener("change", function () {
-    if (!$("csv-file").files[0]) return;
-    if ($("csv-file").files.length === 1) {
-      var reader = new FileReader();
-      reader.onload = function () {
-        $("csv-paste").value = reader.result;
-      };
-      reader.readAsText($("csv-file").files[0], "UTF-8");
+    function drawQuestions() {
+      form.innerHTML = "";
+      var me = sel.value;
+      if (!me) return;
+      var active = window.SociogramQuestions.activeQuestions(state.questions);
+      if (!active.length) {
+        form.innerHTML =
+          '<p class="hint">Er staan nu geen vragen aan. Vraag je mentor.</p>';
+        return;
+      }
+      var saved = state.nominations[me] || {};
+      active.forEach(function (q) {
+        var block = document.createElement("div");
+        block.className = "nomination-block";
+        var selected = saved[q.id] || [];
+        var others = state.students.filter(function (s) {
+          return s.id !== me;
+        });
+        var html =
+          "<h3>" +
+          escapeHtml(q.text) +
+          "</h3>" +
+          '<p class="hint">Maximaal ' +
+          q.maxChoices +
+          " keuzes.</p>" +
+          '<div class="choice-grid">';
+        others.forEach(function (s) {
+          html +=
+            "<label><input type=\"checkbox\" data-qid=\"" +
+            escapeAttr(q.id) +
+            '" value="' +
+            escapeAttr(s.id) +
+            '" ' +
+            (selected.indexOf(s.id) !== -1 ? "checked" : "") +
+            " /> " +
+            escapeHtml(s.name) +
+            "</label>";
+        });
+        html += "</div>";
+        block.innerHTML = html;
+        block.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+          cb.addEventListener("change", function () {
+            var boxes = block.querySelectorAll(
+              'input[type="checkbox"]:checked'
+            );
+            if (boxes.length > q.maxChoices) {
+              cb.checked = false;
+              alert("Maximaal " + q.maxChoices + " keuzes.");
+            }
+          });
+        });
+        form.appendChild(block);
+      });
     }
+
+    sel.onchange = drawQuestions;
+  }
+
+  $("btn-leerling-save").addEventListener("click", function () {
+    var me = $("leerling-select").value;
+    var msg = $("leerling-msg");
+    if (!me) {
+      msg.textContent = "Kies eerst je naam.";
+      return;
+    }
+    if (!state.nominations[me]) state.nominations[me] = {};
+    var active = window.SociogramQuestions.activeQuestions(state.questions);
+    active.forEach(function (q) {
+      var checked = Array.prototype.slice.call(
+        document.querySelectorAll(
+          '#leerling-form input[data-qid="' + q.id + '"]:checked'
+        )
+      );
+      state.nominations[me][q.id] = checked.map(function (el) {
+        return el.value;
+      });
+    });
+    save();
+    msg.textContent = "Bedankt, je antwoorden zijn opgeslagen.";
   });
 
   /* ---------- visualization ---------- */
   function refreshVizFilter() {
     var sel = $("viz-question-filter");
+    if (!sel) return;
     var current = sel.value || "all";
     sel.innerHTML = '<option value="all">Alle actieve vragen</option>';
     window.SociogramQuestions.activeQuestions(state.questions).forEach(function (q) {
       var opt = document.createElement("option");
       opt.value = q.id;
-      opt.textContent = (q.polarity === "positive" ? "+ " : "− ") + q.label;
+      opt.textContent =
+        (q.polarity === "positive" ? "+ " : "− ") + q.label;
       sel.appendChild(opt);
     });
     if (
@@ -550,7 +526,6 @@
   $("viz-question-filter").addEventListener("change", renderViz);
   $("btn-redraw").addEventListener("click", renderViz);
 
-  /* ---------- helpers ---------- */
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, "&amp;")
@@ -564,7 +539,8 @@
   }
 
   /* ---------- boot ---------- */
-  renderQuestions();
-  renderStudents();
-  refreshVizFilter();
+  var role = getRole();
+  if (role === "docent") enterDocent();
+  else if (role === "leerling") enterLeerling();
+  else showView("welcome");
 })();

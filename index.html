@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Sociogram voor mentoren — lokaal in de browser, zonder eigen backend." />
-    <title>Sociogram · mentor</title>
+    <meta name="description" content="Sociogram — mentortool voor de klas" />
+    <title>Sociogram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,55 +14,84 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="app-shell">
+    <!-- START -->
+    <div id="view-welcome" class="welcome">
+      <div class="welcome-inner">
+        <p class="welcome-brand">Sociogram</p>
+        <h1 class="welcome-title">Inzicht in de groep</h1>
+        <p class="welcome-lede">
+          Mentoren stellen vragen. Leerlingen kiezen klasgenoten. Jij ziet het
+          beeld — vertrouwelijk en duidelijk.
+        </p>
+        <div class="welcome-choices">
+          <button type="button" class="welcome-card" id="btn-role-docent">
+            <span class="welcome-card-label">Docent / mentor</span>
+            <span class="welcome-card-text"
+              >Klas beheren, vragen kiezen en het sociogram bekijken.</span
+            >
+          </button>
+          <button type="button" class="welcome-card" id="btn-role-leerling">
+            <span class="welcome-card-label">Leerling</span>
+            <span class="welcome-card-text"
+              >Kies je naam en vul de vragen in voor je mentor.</span
+            >
+          </button>
+        </div>
+        <p class="welcome-note">
+          Er staat een <strong>testklas Demo 2A</strong> klaar om te oefenen.
+        </p>
+      </div>
+    </div>
+
+    <!-- DOCENT -->
+    <div id="view-docent" class="app-shell" hidden>
       <header class="topbar">
         <div>
           <p class="brand">Sociogram</p>
-          <p class="tagline">Mentortool · werkt in de browser (GitHub Pages) · inloggen komt later</p>
+          <p class="tagline" id="docent-tagline">Mentortool</p>
         </div>
         <nav class="tabs" role="tablist" aria-label="Hoofdsecties">
-          <button type="button" class="tab is-active" data-tab="vragen" role="tab" aria-selected="true">
+          <button type="button" class="tab is-active" data-tab="vragen" role="tab">
             Vragen
           </button>
-          <button type="button" class="tab" data-tab="klas" role="tab" aria-selected="false">Klas</button>
-          <button type="button" class="tab" data-tab="forms" role="tab" aria-selected="false">
-            Uitdelen
-          </button>
-          <button type="button" class="tab" data-tab="beeld" role="tab" aria-selected="false">Beeld</button>
+          <button type="button" class="tab" data-tab="klas" role="tab">Klas</button>
+          <button type="button" class="tab" data-tab="uitdelen" role="tab">Uitnodigen</button>
+          <button type="button" class="tab" data-tab="beeld" role="tab">Beeld</button>
         </nav>
+        <button type="button" class="btn btn-ghost" id="btn-home-docent">Start</button>
       </header>
 
       <main>
         <section id="panel-vragen" class="panel is-active" role="tabpanel">
           <div class="panel-head">
             <div>
-              <h1>Vragenbibliotheek</h1>
+              <h1>Vragen</h1>
               <p class="lede">
-                Dit is je tekstbibliotheek. Je hoeft hier niets “aan” te zetten voor Forms:
-                Copilot/Forms bepaalt welke vragen gesteld worden. Na Excel-import zet de app
-                automatisch aan wat in het bestand zat. De schakelaar hier is alleen:
-                <strong>tonen in het sociogram</strong>.
+                Zet vragen aan of uit voor deze meting. Pas de tekst aan als je wilt.
+                Alleen aangezette vragen komen bij leerlingen en in het sociogram.
               </p>
             </div>
             <div class="panel-actions">
-              <button type="button" class="btn btn-ghost" id="btn-reset-questions">Teksten herstellen</button>
-              <button type="button" class="btn btn-secondary" id="btn-show-imported">Toon geïmporteerde</button>
-              <button type="button" class="btn" id="btn-show-all-viz">Alles tonen in beeld</button>
+              <button type="button" class="btn btn-ghost" id="btn-reset-questions">
+                Standaard herstellen
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-enable-positive">
+                Alleen positief
+              </button>
+              <button type="button" class="btn" id="btn-enable-all">Alles aan</button>
             </div>
           </div>
-
           <div class="filter-row">
             <label class="chip-filter">
               <input type="checkbox" id="filter-positive" checked />
-              Positief tonen
+              Positief
             </label>
             <label class="chip-filter">
               <input type="checkbox" id="filter-negative" checked />
-              Negatief tonen
+              Negatief
             </label>
             <p class="muted" id="active-count"></p>
           </div>
-
           <div id="question-list" class="question-list"></div>
         </section>
 
@@ -71,91 +100,68 @@
             <div>
               <h1>Klas</h1>
               <p class="lede">
-                Leerlingenlijst voor Forms-opties en het sociogram. Spelling moet overeenkomen met
-                de namen in Forms.
+                Vul de klasnaam en leerlingen in. Gebruik dezelfde namen als waarmee
+                leerlingen zichzelf kiezen.
               </p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="btn btn-secondary" id="btn-load-demo">
+                Testklas laden
+              </button>
             </div>
           </div>
           <div class="grid-2">
             <div class="card">
               <label for="class-name">Klasnaam</label>
               <input id="class-name" type="text" placeholder="bijv. 2B" />
-              <label for="student-input">Leerlingen</label>
+              <label for="student-input">Leerlingen (één per regel)</label>
               <textarea
                 id="student-input"
                 rows="10"
-                placeholder="Anna de Vries&#10;Boris Jansen&#10;of: Anna, Boris, Carmen"
+                placeholder="Anna&#10;Boris&#10;Carmen"
               ></textarea>
-              <button type="button" class="btn" id="btn-add-students">Toevoegen / bijwerken</button>
+              <button type="button" class="btn" id="btn-add-students">Toevoegen</button>
             </div>
             <div class="card">
               <h2>Huidige lijst</h2>
               <ul id="student-list" class="student-list"></ul>
-              <button type="button" class="btn btn-ghost" id="btn-clear-students">Lijst legen</button>
+              <button type="button" class="btn btn-ghost" id="btn-clear-students">
+                Lijst legen
+              </button>
             </div>
           </div>
         </section>
 
-        <section id="panel-forms" class="panel" role="tabpanel" hidden>
+        <section id="panel-uitdelen" class="panel" role="tabpanel" hidden>
           <div class="panel-head">
             <div>
-              <h1>Uitdelen (zonder Forms-handwerk)</h1>
+              <h1>Uitnodigen</h1>
               <p class="lede">
-                Geen database en geen Copilot-formulier bouwen. Elke leerling krijgt een
-                <strong>persoonlijke code</strong> en vult alleen het eigen tabblad / eigen
-                webformulier in. Jij houdt het codeblad geheim.
+                Leerlingen openen dezelfde site, kiezen <strong>Leerling</strong> en vullen
+                hun antwoorden in. Jij ziet de voortgang hieronder.
               </p>
             </div>
           </div>
-
           <div class="grid-2">
             <div class="card">
-              <h2>1. Pakket maken</h2>
+              <h2>Voor de klas</h2>
               <p class="hint">
-                <strong>Aanbevolen:</strong> HTML-invulpagina (Chromebook-vriendelijk) — leerling
-                opent bestand, typt code, downloadt antwoorden-CSV.<br />
-                <strong>Excel:</strong> één .xls met tabblad per code (deel via OneDrive). Let op:
-                Excel kan andere tabbladen technisch niet verbergen; privacy = code niet delen.
+                Open de startpagina op het bord of deel de link. Leerlingen klikken op
+                Leerling, kiezen hun naam en versturen.
               </p>
-              <label for="package-mode">Welke vragen meenemen?</label>
-              <select id="package-mode">
-                <option value="positive" selected>Alleen positief (aanbevolen)</option>
-                <option value="all">Alles (positief + negatief)</option>
-                <option value="custom">Zelf gekozen</option>
-              </select>
-              <div id="package-custom-list" class="choice-grid" hidden></div>
               <div class="stack-actions">
-                <button type="button" class="btn" id="btn-gen-leerling-html">
-                  Genereer HTML + codes
+                <button type="button" class="btn" id="btn-open-leerling">
+                  Open leerling-invullen
                 </button>
-                <button type="button" class="btn btn-secondary" id="btn-gen-excel">
-                  Genereer Excel-tabbladen + codes
+                <button type="button" class="btn btn-secondary" id="btn-copy-link">
+                  Kopieer paginalink
                 </button>
               </div>
-              <p class="hint" id="pack-status" role="status"></p>
-              <div id="codes-preview" class="code-preview" hidden></div>
+              <p class="hint" id="invite-status" role="status"></p>
             </div>
-
             <div class="card">
-              <h2>2. Antwoorden importeren</h2>
-              <p class="hint">
-                Upload één of meer <code>antwoord-XXXX.csv</code> (uit HTML), of het ingevulde
-                Excel-bestand (.xls), of plak CSV.
-              </p>
-              <label for="csv-file">Bestanden</label>
-              <input
-                type="file"
-                id="csv-file"
-                accept=".csv,text/csv,.txt,.xls,.xml,application/vnd.ms-excel"
-                multiple
-              />
-              <label for="csv-paste">Of plak CSV</label>
-              <textarea id="csv-paste" rows="6" placeholder="Code;Naam;VraagId;..."></textarea>
-              <div class="stack-actions">
-                <button type="button" class="btn" id="btn-import-csv">Importeren naar sociogram</button>
-              </div>
-              <p class="hint" id="import-status" role="status"></p>
-              <ul id="import-warnings" class="signals"></ul>
+              <h2>Voortgang</h2>
+              <ul id="progress-list" class="student-list"></ul>
             </div>
           </div>
         </section>
@@ -165,8 +171,7 @@
             <div>
               <h1>Sociogram</h1>
               <p class="lede">
-                Toont geïmporteerde antwoorden voor actieve vragen. Groen = positief, terracotta =
-                negatief. Wederzijds = dikkere lijn.
+                Groen = positief, terracotta = negatief. Dikkere lijn = wederzijdse keuze.
               </p>
             </div>
             <div class="panel-actions">
@@ -174,11 +179,18 @@
                 Vraagfilter
                 <select id="viz-question-filter"></select>
               </label>
-              <button type="button" class="btn btn-secondary" id="btn-redraw">Opnieuw tekenen</button>
+              <button type="button" class="btn btn-secondary" id="btn-redraw">
+                Opnieuw tekenen
+              </button>
             </div>
           </div>
           <div class="viz-wrap card">
-            <svg id="sociogram-svg" viewBox="0 0 900 560" role="img" aria-label="Sociogram netwerkgrafiek"></svg>
+            <svg
+              id="sociogram-svg"
+              viewBox="0 0 900 560"
+              role="img"
+              aria-label="Sociogram"
+            ></svg>
           </div>
           <div class="grid-2">
             <div class="card">
@@ -190,18 +202,42 @@
               <ul class="legend">
                 <li><span class="swatch swatch-pos"></span> Positieve nominatie</li>
                 <li><span class="swatch swatch-neg"></span> Negatieve nominatie</li>
-                <li><span class="swatch swatch-mutual"></span> Wederzijds (dikkere lijn)</li>
+                <li><span class="swatch swatch-mutual"></span> Wederzijds</li>
               </ul>
             </div>
           </div>
         </section>
       </main>
     </div>
+
+    <!-- LEERLING -->
+    <div id="view-leerling" class="app-shell" hidden>
+      <header class="topbar">
+        <div>
+          <p class="brand">Sociogram</p>
+          <p class="tagline" id="leerling-class-label">Klas</p>
+        </div>
+        <button type="button" class="btn btn-ghost" id="btn-home-leerling">Start</button>
+      </header>
+      <main>
+        <section class="card" style="max-width: 560px">
+          <h1>Jouw antwoorden</h1>
+          <p class="lede">
+            Kies je naam. Antwoorden zijn alleen voor je mentor — niet voor de klas.
+          </p>
+          <label for="leerling-select">Wie ben jij?</label>
+          <select id="leerling-select"></select>
+          <div id="leerling-form" class="nomination-form"></div>
+          <button type="button" class="btn" id="btn-leerling-save">Versturen</button>
+          <p class="hint" id="leerling-msg" role="status"></p>
+        </section>
+      </main>
+    </div>
+
     <script src="./src/questions.js"></script>
+    <script src="./src/demo.js"></script>
     <script src="./src/storage.js"></script>
     <script src="./src/sociogram.js"></script>
-    <script src="./src/forms-excel.js"></script>
-    <script src="./src/excel-pack.js"></script>
     <script src="./src/main.js"></script>
   </body>
 </html>
