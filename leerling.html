@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sociogram · leerling</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="leerling-body">
+    <div class="leerling-page">
+      <a class="leerling-back" href="./index.html">← Start</a>
+
+      <!-- Stap 1: code -->
+      <section id="gate" class="leerling-panel">
+        <p class="leerling-brand">Sociogram</p>
+        <h1>Jouw code</h1>
+        <p class="lede">
+          Vul de code in die je van je mentor hebt gekregen. Je komt dan bij jouw
+          eigen vragen — zonder namenlijst.
+        </p>
+        <label for="code-input">Persoonlijke code</label>
+        <input
+          id="code-input"
+          type="text"
+          inputmode="text"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          maxlength="8"
+          placeholder="bijv. A3K7"
+        />
+        <button type="button" class="btn" id="btn-code-go">Verder</button>
+        <p class="hint err" id="gate-err" role="status"></p>
+        <p class="hint">Demo: probeer <strong>A3K7</strong></p>
+      </section>
+
+      <!-- Stap 2: vragen (gecentreerd) -->
+      <section id="form-wrap" class="leerling-panel" hidden>
+        <p class="leerling-brand">Sociogram</p>
+        <p class="leerling-class" id="class-label"></p>
+        <h1 id="hello">Hallo</h1>
+        <p class="lede">
+          Antwoorden zijn alleen voor je mentor. Kies klasgenoten bij elke vraag.
+        </p>
+        <div id="leerling-form" class="nomination-form"></div>
+        <button type="button" class="btn" id="btn-save">Versturen</button>
+        <p class="hint" id="save-msg" role="status"></p>
+      </section>
+    </div>
+
+    <script src="./src/questions.js"></script>
+    <script src="./src/demo.js"></script>
+    <script src="./src/codes.js"></script>
+    <script src="./src/storage.js"></script>
+    <script src="./src/leerling.js"></script>
+  </body>
+</html>

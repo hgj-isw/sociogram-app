@@ -35,9 +35,16 @@ window.SociogramStorage = (function () {
       var hasStudents =
         Array.isArray(parsed.students) && parsed.students.length > 0;
       if (!hasStudents && !parsed.className) return defaultState();
+      if (parsed.isDemo && window.SociogramDemo) {
+        return window.SociogramDemo.build();
+      }
+      var students = Array.isArray(parsed.students) ? parsed.students : [];
+      if (window.SociogramCodes) {
+        window.SociogramCodes.ensureCodes(students);
+      }
       return {
         className: parsed.className || "",
-        students: Array.isArray(parsed.students) ? parsed.students : [],
+        students: students,
         questions: migrateQuestions(parsed.questions),
         nominations:
           parsed.nominations && typeof parsed.nominations === "object"

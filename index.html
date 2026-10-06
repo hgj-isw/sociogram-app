@@ -14,8 +14,7 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <!-- START -->
-    <div id="view-welcome" class="welcome">
+    <div class="welcome">
       <div class="welcome-inner">
         <p class="welcome-brand">Sociogram</p>
         <h1 class="welcome-title">Inzicht in de groep</h1>
@@ -24,220 +23,24 @@
           beeld — vertrouwelijk en duidelijk.
         </p>
         <div class="welcome-choices">
-          <button type="button" class="welcome-card" id="btn-role-docent">
+          <a class="welcome-card" href="./docent.html">
             <span class="welcome-card-label">Docent / mentor</span>
             <span class="welcome-card-text"
               >Klas beheren, vragen kiezen en het sociogram bekijken.</span
             >
-          </button>
-          <button type="button" class="welcome-card" id="btn-role-leerling">
+          </a>
+          <a class="welcome-card" href="./leerling.html">
             <span class="welcome-card-label">Leerling</span>
             <span class="welcome-card-text"
-              >Kies je naam en vul de vragen in voor je mentor.</span
+              >Vul je persoonlijke code in en beantwoord de vragen.</span
             >
-          </button>
+          </a>
         </div>
         <p class="welcome-note">
-          Er staat een <strong>testklas Demo 2A</strong> klaar om te oefenen.
+          Oefenen: klas <strong>Demo 2A</strong> — probeer code
+          <strong>A3K7</strong> (Anna).
         </p>
       </div>
     </div>
-
-    <!-- DOCENT -->
-    <div id="view-docent" class="app-shell" hidden>
-      <header class="topbar">
-        <div>
-          <p class="brand">Sociogram</p>
-          <p class="tagline" id="docent-tagline">Mentortool</p>
-        </div>
-        <nav class="tabs" role="tablist" aria-label="Hoofdsecties">
-          <button type="button" class="tab is-active" data-tab="vragen" role="tab">
-            Vragen
-          </button>
-          <button type="button" class="tab" data-tab="klas" role="tab">Klas</button>
-          <button type="button" class="tab" data-tab="uitdelen" role="tab">Uitnodigen</button>
-          <button type="button" class="tab" data-tab="beeld" role="tab">Beeld</button>
-        </nav>
-        <button type="button" class="btn btn-ghost" id="btn-home-docent">Start</button>
-      </header>
-
-      <main>
-        <section id="panel-vragen" class="panel is-active" role="tabpanel">
-          <div class="panel-head">
-            <div>
-              <h1>Vragen</h1>
-              <p class="lede">
-                Zet vragen aan of uit voor deze meting. Pas de tekst aan als je wilt.
-                Alleen aangezette vragen komen bij leerlingen en in het sociogram.
-              </p>
-            </div>
-            <div class="panel-actions">
-              <button type="button" class="btn btn-ghost" id="btn-reset-questions">
-                Standaard herstellen
-              </button>
-              <button type="button" class="btn btn-secondary" id="btn-enable-positive">
-                Alleen positief
-              </button>
-              <button type="button" class="btn" id="btn-enable-all">Alles aan</button>
-            </div>
-          </div>
-          <div class="filter-row">
-            <label class="chip-filter">
-              <input type="checkbox" id="filter-positive" checked />
-              Positief
-            </label>
-            <label class="chip-filter">
-              <input type="checkbox" id="filter-negative" checked />
-              Negatief
-            </label>
-            <p class="muted" id="active-count"></p>
-          </div>
-          <div id="question-list" class="question-list"></div>
-        </section>
-
-        <section id="panel-klas" class="panel" role="tabpanel" hidden>
-          <div class="panel-head">
-            <div>
-              <h1>Klas</h1>
-              <p class="lede">
-                Vul de klasnaam en leerlingen in. Gebruik dezelfde namen als waarmee
-                leerlingen zichzelf kiezen.
-              </p>
-            </div>
-            <div class="panel-actions">
-              <button type="button" class="btn btn-secondary" id="btn-load-demo">
-                Testklas laden
-              </button>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="card">
-              <label for="class-name">Klasnaam</label>
-              <input id="class-name" type="text" placeholder="bijv. 2B" />
-              <label for="student-input">Leerlingen (één per regel)</label>
-              <textarea
-                id="student-input"
-                rows="10"
-                placeholder="Anna&#10;Boris&#10;Carmen"
-              ></textarea>
-              <button type="button" class="btn" id="btn-add-students">Toevoegen</button>
-            </div>
-            <div class="card">
-              <h2>Huidige lijst</h2>
-              <ul id="student-list" class="student-list"></ul>
-              <button type="button" class="btn btn-ghost" id="btn-clear-students">
-                Lijst legen
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section id="panel-uitdelen" class="panel" role="tabpanel" hidden>
-          <div class="panel-head">
-            <div>
-              <h1>Uitnodigen</h1>
-              <p class="lede">
-                Leerlingen openen dezelfde site, kiezen <strong>Leerling</strong> en vullen
-                hun antwoorden in. Jij ziet de voortgang hieronder.
-              </p>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="card">
-              <h2>Voor de klas</h2>
-              <p class="hint">
-                Open de startpagina op het bord of deel de link. Leerlingen klikken op
-                Leerling, kiezen hun naam en versturen.
-              </p>
-              <div class="stack-actions">
-                <button type="button" class="btn" id="btn-open-leerling">
-                  Open leerling-invullen
-                </button>
-                <button type="button" class="btn btn-secondary" id="btn-copy-link">
-                  Kopieer paginalink
-                </button>
-              </div>
-              <p class="hint" id="invite-status" role="status"></p>
-            </div>
-            <div class="card">
-              <h2>Voortgang</h2>
-              <ul id="progress-list" class="student-list"></ul>
-            </div>
-          </div>
-        </section>
-
-        <section id="panel-beeld" class="panel" role="tabpanel" hidden>
-          <div class="panel-head">
-            <div>
-              <h1>Sociogram</h1>
-              <p class="lede">
-                Groen = positief, terracotta = negatief. Dikkere lijn = wederzijdse keuze.
-              </p>
-            </div>
-            <div class="panel-actions">
-              <label class="inline-label">
-                Vraagfilter
-                <select id="viz-question-filter"></select>
-              </label>
-              <button type="button" class="btn btn-secondary" id="btn-redraw">
-                Opnieuw tekenen
-              </button>
-            </div>
-          </div>
-          <div class="viz-wrap card">
-            <svg
-              id="sociogram-svg"
-              viewBox="0 0 900 560"
-              role="img"
-              aria-label="Sociogram"
-            ></svg>
-          </div>
-          <div class="grid-2">
-            <div class="card">
-              <h2>Signalen</h2>
-              <ul id="signals-list" class="signals"></ul>
-            </div>
-            <div class="card">
-              <h2>Legenda</h2>
-              <ul class="legend">
-                <li><span class="swatch swatch-pos"></span> Positieve nominatie</li>
-                <li><span class="swatch swatch-neg"></span> Negatieve nominatie</li>
-                <li><span class="swatch swatch-mutual"></span> Wederzijds</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <!-- LEERLING -->
-    <div id="view-leerling" class="app-shell" hidden>
-      <header class="topbar">
-        <div>
-          <p class="brand">Sociogram</p>
-          <p class="tagline" id="leerling-class-label">Klas</p>
-        </div>
-        <button type="button" class="btn btn-ghost" id="btn-home-leerling">Start</button>
-      </header>
-      <main>
-        <section class="card" style="max-width: 560px">
-          <h1>Jouw antwoorden</h1>
-          <p class="lede">
-            Kies je naam. Antwoorden zijn alleen voor je mentor — niet voor de klas.
-          </p>
-          <label for="leerling-select">Wie ben jij?</label>
-          <select id="leerling-select"></select>
-          <div id="leerling-form" class="nomination-form"></div>
-          <button type="button" class="btn" id="btn-leerling-save">Versturen</button>
-          <p class="hint" id="leerling-msg" role="status"></p>
-        </section>
-      </main>
-    </div>
-
-    <script src="./src/questions.js"></script>
-    <script src="./src/demo.js"></script>
-    <script src="./src/storage.js"></script>
-    <script src="./src/sociogram.js"></script>
-    <script src="./src/main.js"></script>
   </body>
 </html>

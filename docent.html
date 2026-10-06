@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sociogram · docent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="brand">Sociogram</p>
+          <p class="tagline" id="docent-tagline">Mentortool</p>
+        </div>
+        <nav class="tabs" role="tablist" aria-label="Hoofdsecties">
+          <button type="button" class="tab is-active" data-tab="vragen">Vragen</button>
+          <button type="button" class="tab" data-tab="klas">Klas</button>
+          <button type="button" class="tab" data-tab="uitdelen">Codes</button>
+          <button type="button" class="tab" data-tab="beeld">Beeld</button>
+        </nav>
+        <a class="btn btn-ghost" href="./index.html">Start</a>
+      </header>
+
+      <main>
+        <section id="panel-vragen" class="panel is-active">
+          <div class="panel-head">
+            <div>
+              <h1>Vragen</h1>
+              <p class="lede">
+                Zet vragen aan of uit. Alleen aangezette vragen zien leerlingen en
+                komen in het sociogram.
+              </p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="btn btn-ghost" id="btn-reset-questions">
+                Standaard herstellen
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-enable-positive">
+                Alleen positief
+              </button>
+              <button type="button" class="btn" id="btn-enable-all">Alles aan</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <label class="chip-filter">
+              <input type="checkbox" id="filter-positive" checked />
+              Positief
+            </label>
+            <label class="chip-filter">
+              <input type="checkbox" id="filter-negative" checked />
+              Negatief
+            </label>
+            <p class="muted" id="active-count"></p>
+          </div>
+          <div id="question-list" class="question-list"></div>
+        </section>
+
+        <section id="panel-klas" class="panel" hidden>
+          <div class="panel-head">
+            <div>
+              <h1>Klas</h1>
+              <p class="lede">
+                Vul klasnaam en leerlingen in. Elke leerling krijgt automatisch een
+                persoonlijke code.
+              </p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="btn btn-secondary" id="btn-load-demo">
+                Testklas laden
+              </button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <label for="class-name">Klasnaam</label>
+              <input id="class-name" type="text" placeholder="bijv. 2B" />
+              <label for="student-input">Leerlingen (één per regel)</label>
+              <textarea id="student-input" rows="10" placeholder="Anna&#10;Boris"></textarea>
+              <button type="button" class="btn" id="btn-add-students">Toevoegen</button>
+            </div>
+            <div class="card">
+              <h2>Huidige lijst</h2>
+              <ul id="student-list" class="student-list"></ul>
+              <button type="button" class="btn btn-ghost" id="btn-clear-students">
+                Lijst legen
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="panel-uitdelen" class="panel" hidden>
+          <div class="panel-head">
+            <div>
+              <h1>Persoonlijke codes</h1>
+              <p class="lede">
+                Geef elke leerling privé de eigen code. Zij openen
+                <strong>Leerling</strong> op de startpagina, typen de code en zien
+                alleen hun eigen formulier — geen namenlijst.
+              </p>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h2>Delen</h2>
+              <p class="hint">
+                Link voor leerlingen (startpagina → Leerling):
+              </p>
+              <div class="stack-actions">
+                <a class="btn" href="./leerling.html">Open leerlingpagina</a>
+                <button type="button" class="btn btn-secondary" id="btn-copy-link">
+                  Kopieer link
+                </button>
+              </div>
+              <p class="hint" id="invite-status" role="status"></p>
+            </div>
+            <div class="card">
+              <h2>Codes &amp; voortgang</h2>
+              <p class="hint">Alleen voor jou — niet projecteren met codes.</p>
+              <ul id="progress-list" class="student-list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="panel-beeld" class="panel" hidden>
+          <div class="panel-head">
+            <div>
+              <h1>Sociogram</h1>
+              <p class="lede">
+                Groen = positief, terracotta = negatief. Dikkere lijn = wederzijds.
+              </p>
+            </div>
+            <div class="panel-actions">
+              <label class="inline-label">
+                Vraagfilter
+                <select id="viz-question-filter"></select>
+              </label>
+              <button type="button" class="btn btn-secondary" id="btn-redraw">
+                Opnieuw tekenen
+              </button>
+            </div>
+          </div>
+          <div class="viz-wrap card">
+            <svg id="sociogram-svg" viewBox="0 0 900 560" role="img" aria-label="Sociogram"></svg>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h2>Signalen</h2>
+              <ul id="signals-list" class="signals"></ul>
+            </div>
+            <div class="card">
+              <h2>Legenda</h2>
+              <ul class="legend">
+                <li><span class="swatch swatch-pos"></span> Positief</li>
+                <li><span class="swatch swatch-neg"></span> Negatief</li>
+                <li><span class="swatch swatch-mutual"></span> Wederzijds</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="./src/questions.js"></script>
+    <script src="./src/demo.js"></script>
+    <script src="./src/codes.js"></script>
+    <script src="./src/storage.js"></script>
+    <script src="./src/sociogram.js"></script>
+    <script src="./src/docent.js"></script>
+  </body>
+</html>

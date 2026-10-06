@@ -527,6 +527,8 @@ textarea {
   cursor: pointer;
   font: inherit;
   color: inherit;
+  text-decoration: none;
+  display: block;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -564,5 +566,109 @@ textarea {
   border-top: none;
   padding-top: 0;
   margin-top: 0;
+}
+
+/* Leerlingpagina — gecentreerd */
+.leerling-body {
+  min-height: 100vh;
+}
+
+.leerling-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px 64px;
+  position: relative;
+}
+
+.leerling-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.leerling-back:hover {
+  color: var(--ink);
+}
+
+.leerling-panel {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  padding: 28px 24px 32px;
+}
+
+.leerling-brand {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.leerling-class {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.leerling-panel h1 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+}
+
+.leerling-panel .lede {
+  margin: 0 0 20px;
+}
+
+.leerling-panel label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.leerling-panel #code-input {
+  width: 100%;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.leerling-panel .btn {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.leerling-panel .err {
+  color: var(--warn);
+  min-height: 1.2em;
+}
+
+.leerling-panel .nomination-form {
+  margin: 8px 0 18px;
+}
+
+.leerling-panel .nomination-block h3 {
+  font-size: 1.05rem;
+}
+
+.leerling-panel .choice-grid label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 6px 0;
 }
 
